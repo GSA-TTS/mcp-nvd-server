@@ -9,7 +9,7 @@ Common Vulnerabilities and Exposures (CVE): NVD uses unique identifiers cve_id t
 
 Known Exploited Vulnerabilities (KEV): Vulnerabilities that have been observed in the wild are listed in the CISA maintained [KEV Catalog](https://www.cisa.gov/known-exploited-vulnerabilities-catalog).  NVD flags CVEs listed in the KEV catalog, which provides more information about required actions and mitigation.
 
-##Vulnerability resources
+## Vulnerability resources
 [CVE Foundation](https://www.thecvefoundation.org/resources)
 
 ### This project is not endorsed or supported by the US Government and is for personal development only.
