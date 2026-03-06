@@ -1,6 +1,6 @@
 from mcp.server.fastmcp import FastMCP
 
-from mcp_nvd_server.config import settings
+# from mcp_nvd_server.config import settings
 from mcp_nvd_server.services.cve_service import CVEService
 
 mcp = FastMCP(
