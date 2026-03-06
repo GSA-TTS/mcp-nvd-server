@@ -5,9 +5,12 @@ Starter MCP server for the [NIST National Vulnerability Database (NVD)](https://
 
 The NVD includes databases of security checklist references, security-related software flaws, product names, and impact metrics.
 
+## Vulnerability Concepts
 Common Vulnerabilities and Exposures (CVE): NVD uses unique identifiers cve_id to identify vulnerabilities and to associate specific versions of code bases (e.g., software and shared libraries) with the Common Platform Enumeration (CPE) to those vulnerabilities. 
 
 Known Exploited Vulnerabilities (KEV): Vulnerabilities that have been observed in the wild are listed in the CISA maintained [KEV Catalog](https://www.cisa.gov/known-exploited-vulnerabilities-catalog).  NVD flags CVEs listed in the KEV catalog, which provides more information about required actions and mitigation.
+
+Common Vulnerability Scoring System (CVSS) is a method used to supply a qualitative measure of severity. Metrics result in a numerical score ranging from 0 to 10 (CriticaL). 
 
 ## Vulnerability resources
 [CVE Foundation](https://www.thecvefoundation.org/resources)
@@ -79,14 +82,12 @@ Open browser link created to launch Inspector. Enter the bash command from step 
 Returns a normalized CVE record for a single CVE ID.
 
 ### `nvd_search_cves`
-Searches NVD CVEs using common filters such as keyword, CPE, severity, and date windows.
+Searches NVD CVEs using common filters such as keyword, CPE, severity score (CVSS), and time frame windows.
 
 ## Work in progress
 
-1. Add `nvd_search_cves`
-2. Add `nvd_search_cpes`
-3. Add `nvd_get_cve_history`
-4. Add a KEV client and KEV lookup tools for CISA KEV Catalog
+1. Add tools `nvd_search_cves`, `nvd_search_cpes`, `nvd_get_cve_history`
+2. Add a KEV client and KEV lookup tools for CISA KEV Catalog
 
 
 ## NVD attribution
