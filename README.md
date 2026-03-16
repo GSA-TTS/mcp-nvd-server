@@ -34,12 +34,12 @@ This is an MVP, not a finished production server. It currently focuses on:
 
 ## NVD API coverage
 
-This server targets the NIST NVD API v2.0 and primarily wraps these endpoints: 
-`cves/2.0` for CVE lookup and search, 
-`cvehistory/2.0` for CVE change history, 
-`cpes/2.0` for official CPE dictionary records, 
-`cpematch/2.0` for CPE match criteria, and 
-`source/2.0` for source-organization metadata. 
+This server targets the NIST NVD API v2.0 and primarily wraps these endpoints:  
+`cves/2.0` for CVE lookup and search,  
+`cvehistory/2.0` for CVE change history,  
+`cpes/2.0` for official CPE dictionary records,  
+`cpematch/2.0` for CPE match criteria, and  
+`source/2.0` for source-organization metadata.  
 
 Base URLs:
 - `https://services.nvd.nist.gov/rest/json/cves/2.0`
