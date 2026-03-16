@@ -123,5 +123,6 @@ class CVEService:
 
         return {
             "found": True,
+            "results": result.model_dump(),
             "result": result.model_dump(),
         }
