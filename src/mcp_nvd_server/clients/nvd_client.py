@@ -64,3 +64,61 @@ class NVDClient:
             response = await client.get(url, params=params, headers=self._headers())
             response.raise_for_status()
             return response.json()
+
+
+    async def search_cpes(
+        self,
+        keyword: str | None = None,
+        cpe_match_string: str | None = None,
+        cpe_name_id: str | None = None,
+        limit: int = 10,
+        start_index: int = 0,
+    ) -> dict:
+        url = f"{self.base_url}/cpes/2.0"
+
+        params: dict[str, str | int] = {
+            "resultsPerPage": min(limit, 50),
+            "startIndex": start_index,
+        }
+
+        if keyword:
+            params["keywordSearch"] = keyword
+        if cpe_match_string:
+            params["cpeMatchString"] = cpe_match_string
+        if cpe_name_id:
+            params["cpeNameId"] = cpe_name_id
+
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
+            response = await client.get(url, params=params, headers=self._headers())
+            response.raise_for_status()
+            return response.json()
+
+    async def get_cve_history(
+        self,
+        cve_id: str | None = None,
+        change_start_date: str | None = None,
+        change_end_date: str | None = None,
+        event_name: str | None = None,
+        limit: int = 20,
+        start_index: int = 0,
+    ) -> dict:
+        url = f"{self.base_url}/cvehistory/2.0"
+
+        params: dict[str, str | int] = {
+            "resultsPerPage": min(limit, 50),
+            "startIndex": start_index,
+        }
+
+        if cve_id:
+            params["cveId"] = cve_id
+        if change_start_date:
+            params["changeStartDate"] = change_start_date
+        if change_end_date:
+            params["changeEndDate"] = change_end_date
+        if event_name:
+            params["eventName"] = event_name
+
+        async with httpx.AsyncClient(timeout=self.timeout) as client:
+            response = await client.get(url, params=params, headers=self._headers())
+            response.raise_for_status()
+            return response.json()
