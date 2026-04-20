@@ -10,6 +10,7 @@ from mcp_nvd_server.models.cvss import (
     ParsedCVSSVector,
 )
 
+from mcp_nvd_server.models.kev import CisaKevMetadata
 
 # ----------------------------
 # Metric dictionaries
@@ -443,12 +444,19 @@ def build_normalized_cve(
     cpes: list[str] | None = None,
     references: list[dict[str, Any]] | None = None,
     raw_cve: dict[str, Any],
-    kev: dict[str, Any] | None = None,
+    cisa_kev_metadata: dict | CisaKevMetadata | None = None, 
 ) -> NormalizedCVE:
     scores = extract_all_cvss_scores(raw_cve)
     preferred = extract_preferred_cvss(raw_cve)
     interpretation = build_cvss_interpretation(preferred)
-
+    metadata_obj: CisaKevMetadata | None
+    if cisa_kev_metadata is None:
+        metadata_obj = None
+    elif isinstance(cisa_kev_metadata, CisaKevMetadata):
+        metadata_obj = cisa_kev_metadata
+    else:
+        metadata_obj = CisaKevMetadata(**cisa_kev_metadata)
+        
     return NormalizedCVE(
         cve_id=cve_id,
         published=published,
@@ -463,5 +471,5 @@ def build_normalized_cve(
         cvss_scores=scores,
         cvss_versions_available=_dedupe([str(s.version) for s in scores]),
         cvss_interpretation=interpretation,
-        kev=kev or {},
+        cisa_kev_metadata=metadata_obj,
     )
