@@ -14,7 +14,7 @@ async def refresh(self) -> None:
   async with httpx.AsyncClient(timeout=self.timeout) as client:
     response = await client.get(self.source_url)
     response.raise_for_status()
-    data = resposne.json()
+    data = response.json()
 
   vulnerabilities = data.get("vulnerabilities", [])
 
