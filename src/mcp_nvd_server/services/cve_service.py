@@ -1,12 +1,14 @@
 import httpx
 
 from mcp_nvd_server.clients.nvd_client import NVDClient
+from mcp_nvd_server.clients.kev_client import KEVClient
 from mcp_nvd_server.models import CVESearchResult, CVESummary
 from mcp_nvd_server.utils.cvss_helpers import build_normalized_cve
 
 class CVEService:
     def __init__(self) -> None:
         self.client = NVDClient()
+        self.kev_client = KEVClient()
 
     def _extract_english_description(self, cve: dict) -> str | None:
         descriptions = cve.get("descriptions", [])
@@ -40,6 +42,49 @@ class CVEService:
             base_score=base_score,
         )
 
+    def _extract_cwes(self, cve: dict) -> list[str]:
+        weaknesses = cve.get("weaknesses", [])
+        cwe_list: list[str] = []
+
+        for weakness in weaknesses:
+            for desc in weakness.get("description", []):
+                value = desc.get("value")
+                if value and value not in ("NVD-CWE-Other", "NVD-CWE-noinfo"):
+                    cwe_list.append(value)
+        return list(dict.fromkeys(cwe_list))
+    
+    def _extract_cpes(self, cve: dict) -> list[str]:
+        configurations = cve.get("configurations", [])
+        cpe_list: list[str] = []
+
+        def collect_cpes(nodes: list[dict]) -> None:
+            for node in nodes:
+                for match in node.get("cpeMatch", []):
+                    criteria = match.get("criteria")
+                    if criteria:
+                        cpe_list.append(criteria)
+                child_nodes = node.get("nodes", [])
+                if child_nodes:
+                    collect_cpes(child_nodes)
+        
+        for config in configurations:
+            collect_cpes(config.get("nodes", []))
+        return list(dict.fromkeys(cpe_list))
+
+    def _extract_references(self, cve: dict) -> list[dict]:
+        references = cve.get("references", [])
+        references_list = [
+            {
+                "url": ref.get("url"),
+                "source": ref.get("source"),
+                "tags": ref.get("tags", []),
+            }
+            for ref in references
+            if ref.get("url")
+        ]
+        return references_list
+    
+
     async def get_cve(self, cve_id: str) -> dict:
         try:
             data = await self.client.get_cve(cve_id)
@@ -65,6 +110,7 @@ class CVEService:
             }
 
         cve = vulnerabilities[0].get("cve", {})
+        resolved_cve_id = cve.get("id", cve_id)
         
         descriptions = cve.get("descriptions", [])
         english_description = next(
@@ -106,7 +152,32 @@ class CVEService:
             if ref.get("url")
         ]
 
-        kev_summary = {}
+        kev_record = await self.kev_client.get_by_cve(resolved_cve_id)
+
+        cisa_kev_metadata = {
+            "exploit_add_date": cve.get("cisaExploitAdd"),
+            "action_due_date": cve.get("cisaActionDue"),
+            "required_action": cve.get("cisaRequiredAction"),
+            "vulnerability_name": cve.get("cisaVulnerabilityName"),
+            "known_ransomware_campaign_use": None,
+            "notes": None,
+            "kev_cwes": [],
+            "in_kev_catalog": any(
+                cve.get(field) is not None
+                for field in (
+                    "cisaExploitAdd",
+                    "cisaActionDue",
+                    "cisaRequiredAction",
+                    "cisaVulnerabilityName",
+                )
+            ),
+        }
+
+        if kev_record:
+            cisa_kev_metadata["known_ransomware_campaign_use"] = (kev_record.known_ransomware_campaign_use)
+            cisa_kev_metadata["notes"] = kev_record.notes
+            cisa_kev_metadata["kev_cwes"] = kev_record.kev_cwes
+            cisa_kev_metadata["in_kev_catalog"] = True                    
 
         normalized = build_normalized_cve(
             cve_id=cve.get("id", ""),
@@ -117,7 +188,7 @@ class CVEService:
             cpes=cpe_list,
             references=references_list,
             raw_cve=cve,
-            kev=kev_summary,
+            cisa_kev_metadata=cisa_kev_metadata,
         )
 
         return {
@@ -178,5 +249,4 @@ class CVEService:
         return {
             "found": True,
             "results": result.model_dump(),
-            "result": result.model_dump(),
         }
